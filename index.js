@@ -7,8 +7,6 @@ const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 const app = express();
 
-//user:Pick-a-Book
-//pass:Ul83fAF4uzdDmhNo
 // middleware
 app.use(cors());
 app.use(express.json());
@@ -21,21 +19,6 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 console.log(uri);
-// function verifyJWT(req, res, next) {
-//   const authHeader = req.headers.authorization;
-//   if (!authHeader) {
-//     return res.status(401).send({ message: "unauthorize access" });
-//   }
-//   const token = authHeader.split(" ")[1];
-//   jwt.verify(token, process.env.ACCES_TOKEN_SECRET, function (err, decoded) {
-//     if (err) {
-//       return res.status(401).send({ message: "unauthorize access" });
-//     }
-//     req.decoded = decoded;
-//     next();
-//   });
-// }
-// const collection = client.db("test").collection("devices");
 
 async function run() {
   try {
