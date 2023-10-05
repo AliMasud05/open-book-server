@@ -104,6 +104,55 @@ async function run() {
         }
       }
     });
+    // Authentication APIs End
+
+    //book API
+    app.get("/books/all-books", async (req, res) => {
+      const { search, genre, publicationYear } = req.query;
+      // Prepare the filter conditions
+      const filter = {};
+
+      if (search) {
+        // Use search for title, author name, and genre
+        filter.$or = [
+          { title: { $regex: search, $options: "i" } },
+          { author: { $regex: search, $options: "i" } },
+          { genre: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      if (genre) {
+        // Filter by genre
+        filter.genre = genre;
+      }
+
+      if (publicationYear) {
+        filter.publicationDate = {
+          $regex: `^${publicationYear}-`,
+          $options: "i",
+        };
+      }
+
+      const books = await booksCollection.find(filter).toArray();
+      return res.status(200).send({
+        message: "Books retrieved successfully!",
+        books: books,
+      });
+    });
+
+      app.get("/books/recent-published", async (req, res) => {
+        const sort = { publishedDate: -1 };
+        const result = await booksCollection
+          .find({})
+          .sort(sort)
+          .limit(10)
+          .toArray();
+        return res.status(200).send({
+          message: "Recent Published Books retrieved successfully!",
+          books: result,
+        });
+      });
+
   
   } finally {
   }
