@@ -153,7 +153,158 @@ async function run() {
         });
       });
 
-  
+      app.get("/books/:id", async (req, res) => {
+        const bookId = req.params.id;
+        const book = await booksCollection.findOne({
+          _id: new ObjectId(bookId),
+        });
+
+        if (book) {
+          return res.status(200).send({
+            message: "Book details retrieved successfully!",
+            book: book,
+          });
+        } else {
+          return res.status(404).send({
+            message: "Book not found",
+          });
+        }
+      });
+
+   
+  app.post("/books/add-book", async (req, res) => {
+    const authorizeToken = req.headers.authorization;
+    if (!authorizeToken) {
+      return res.status(400).send({
+        message: "Authorization not provided",
+      });
+    } else {
+      const verifiedUser = await jwt.verify(authorizeToken, "tokenSecret");
+      if (!verifiedUser) {
+        return res.status(400).send({
+          message: "You are not authorized",
+        });
+      } else {
+        const bookData = req.body;
+        const result = await booksCollection.insertOne(bookData);
+        if (result.acknowledged == true) {
+          return res.status(200).send({
+            message: "Book added successfully!",
+            book: bookData,
+          });
+        } else {
+          return res.status(400).send({
+            message: "Book added failed!",
+          });
+        }
+      }
+    }
+  });
+
+  app.put("/books/update-book/:id", async (req, res) => {
+    const authorizeToken = req.headers.authorization;
+    if (!authorizeToken) {
+      return res.status(400).send({
+        message: "Authorization not provided",
+      });
+    } else {
+      const verifiedUser = await jwt.verify(authorizeToken, "tokenSecret");
+      if (!verifiedUser) {
+        return res.status(400).send({
+          message: "You are not authorized",
+        });
+      } else {
+        const bookId = req.params.id;
+        const updatedBookData = req.body;
+
+        // Remove the _id field from the updatedBookData object
+        delete updatedBookData._id;
+
+        const result = await booksCollection.updateOne(
+          { _id: new ObjectId(bookId) },
+          { $set: updatedBookData }
+        );
+
+        if (result.matchedCount > 0) {
+          return res.status(200).send({
+            message: "Book updated successfully!",
+            book: updatedBookData,
+          });
+        } else {
+          return res.status(404).send({
+            message: "Book not found",
+          });
+        }
+      }
+    }
+  });
+
+  app.delete("/books/:id", async (req, res) => {
+    const authorizeToken = req.headers.authorization;
+    if (!authorizeToken) {
+      return res.status(400).send({
+        message: "Authorization not provided",
+      });
+    } else {
+      const verifiedUser = await jwt.verify(authorizeToken, "tokenSecret");
+      if (!verifiedUser) {
+        return res.status(400).send({
+          message: "You are not authorized",
+        });
+      } else {
+        const bookId = req.params.id;
+
+        const result = await booksCollection.deleteOne({
+          _id: new ObjectId(bookId),
+        });
+
+        if (result.deletedCount > 0) {
+          return res.status(200).send({
+            message: "Book deleted successfully!",
+          });
+        } else {
+          return res.status(404).send({
+            message: "Book not found",
+          });
+        }
+      }
+    }
+  });
+
+  app.post("/books/:id", async (req, res) => {
+    const authorizeToken = req.headers.authorization;
+    if (!authorizeToken) {
+      return res.status(400).send({
+        message: "Authorization not provided",
+      });
+    } else {
+      const verifiedUser = await jwt.verify(authorizeToken, "tokenSecret");
+      if (!verifiedUser) {
+        return res.status(400).send({
+          message: "You are not authorized",
+        });
+      } else {
+        const bookId = req.params.id;
+        const bodyData = req.body;
+        const filter = { _id: new ObjectId(bookId) };
+        const update = {
+          $push: { customerReviews: bodyData },
+        };
+
+        const result = await booksCollection.updateOne(filter, update);
+
+        if (result.modifiedCount > 0) {
+          return res.status(200).send({
+            message: "Review added successfully!",
+          });
+        } else {
+          return res.status(400).send({
+            message: "Review adding failed!",
+          });
+        }
+      }
+    }
+  });
   } finally {
   }
 }
